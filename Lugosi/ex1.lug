@@ -1,0 +1,14 @@
+main{
+    var int a;
+    var int b;
+    var int divisao;
+    divisao := 1;
+    a := 2;
+    b := 6;
+    while((b > (a-1))) do 
+    {
+        divisao := (divisao + 1);
+        b := (b - a);
+    };
+    print (divisao);
+}

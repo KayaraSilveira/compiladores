@@ -1,0 +1,20 @@
+main{
+    var int n;
+    var int exp;
+    var int resultado;
+    n := 2;
+    exp := 3;
+    resultado := powpow(n, exp);
+    print(resultado);
+}
+
+function int powpow(int n, int exp){
+    var int resultado;
+    resultado := 1;
+    while((exp > 0)) do
+    {
+        resultado := (resultado * n);
+        exp := (exp - 1);
+    };
+    return resultado;
+}

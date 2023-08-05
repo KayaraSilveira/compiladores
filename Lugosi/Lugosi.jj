@@ -1,0 +1,651 @@
+PARSER_BEGIN(Lugosi)
+import java.io.*;
+import java.util.ArrayList;
+
+//Primeira regra: Lugosi, que contém um main obrigatório, sendo o main uma lista de comandos 
+//E pode ou não possuir uma lista de funções.
+
+class LugosiA{
+    Main principal;
+    ArrayList<Func> listaDeFuncoes = new ArrayList();
+
+    LugosiA(Main principal, ArrayList<Func> listaDeFuncoes)
+    {
+        this.principal=principal;
+        this.listaDeFuncoes=listaDeFuncoes;
+    }
+
+    public String toString(){
+        String retornoLugosi = new String();
+        retornoLugosi += "#include<stdio.h>" + "\n" + "#include<stdlib.h>" + "\n" + "#include <stdbool.h>" + "\n";
+        for(int i = 0; i < listaDeFuncoes.size(); i++) {
+            retornoLugosi += listaDeFuncoes.get(i).toString();
+        }
+        return retornoLugosi + principal.toString() + "\n";
+    }
+}
+
+
+class Main{
+    ArrayList<DeclaraVar> declaracoes = new ArrayList();
+    ArrayList<Comando> comandos = new ArrayList();
+
+    Main(ArrayList<DeclaraVar> declaracoes, ArrayList<Comando> comandos){
+        this.declaracoes = declaracoes;
+        this.comandos = comandos;
+    }
+
+    public String toString(){
+        String retornoMain = new String();
+        retornoMain += "int main()" + "{" + "\n";
+        for(int i = 0; i < declaracoes.size(); i++) {
+            retornoMain += declaracoes.get(i).toString();    
+        }
+        for(int i = 0; i < comandos.size(); i++) {
+            retornoMain += comandos.get(i).toString();
+        }
+        return retornoMain + "\n" + "}";
+    }
+}
+
+class DeclaraVar{
+    Tipo tipo;
+    Var id;
+
+    DeclaraVar(Tipo tipo, Var id){
+        this.tipo = tipo;
+        this.id = id;
+    }
+
+    public String toString(){
+        return tipo.toString() + " " + id.toString() + ";" + "\n";
+    }
+}
+
+class Vardecl{
+    ArrayList<DeclaraVar> declaracoes = new ArrayList();
+
+    Vardecl(ArrayList<DeclaraVar> declaracoes){
+        this.declaracoes = declaracoes;
+    }
+
+    public String toString(){
+        String retornoDeclaracoes = new String();
+        for(int i=0; i<declaracoes.size(); i++){
+            retornoDeclaracoes += declaracoes.get(i).toString();
+            retornoDeclaracoes += "\n";
+        }
+
+        return retornoDeclaracoes;
+    }
+}
+
+class Tipo{
+    String tipoVar;
+
+    Tipo(String tipoVar){
+        this.tipoVar = tipoVar;
+    }
+
+    public String toString(){
+        return tipoVar;
+    }
+}
+
+
+
+class Comando{}
+
+class Atrib extends Comando{
+   Var id;
+   Exp exp;
+  
+   Atrib (Var id, Exp exp)
+   {
+    this.id=id;
+    this.exp=exp;
+   }
+
+    public String toString(){
+      return id.toString() + "=" + exp.toString() + ";" + "\n";
+    }
+
+}
+
+class chamadaDeFuncao extends Comando{
+    Var id;
+    ArrayList<Exp> exp = new ArrayList();
+
+    chamadaDeFuncao(Var id, ArrayList<Exp> exp)
+    {
+        this.id = id;
+        this.exp = exp;
+    }
+
+    public String toString() {
+      String retornoExpressoes = new String();
+      for(int i=0; i<exp.size(); i++) {
+        retornoExpressoes += exp.get(i).toString();
+        if(i != exp.size() - 1){
+            retornoExpressoes += ", ";
+            }
+        }
+
+      return id.toString() + "(" + retornoExpressoes + ")" + ";" + "\n";
+    }
+}
+
+class condicional extends Comando{
+    Exp exp;
+    ArrayList<Comando> seqcomandos =  new ArrayList();
+
+    condicional(Exp exp, ArrayList<Comando> seqcomandos)
+    {
+        this.exp = exp;
+        this.seqcomandos = seqcomandos;
+    }
+
+    public String toString(){
+        String retornoCondicional = new String();
+        retornoCondicional += "if" + "(" + exp.toString() + ")" + "{";
+        for(int i = 0; i < seqcomandos.size(); i++) {
+            retornoCondicional += seqcomandos.get(i).toString();
+        }
+        return retornoCondicional + "}" + "\n";
+    }
+}
+
+class loopWhile extends Comando{
+    Exp exp;
+    ArrayList<Comando> seqcomandos =  new ArrayList();
+
+    loopWhile(Exp exp, ArrayList<Comando> seqcomandos)
+    {
+        this.exp = exp;
+        this.seqcomandos = seqcomandos;
+    }
+
+    public String toString(){
+        String retornoWhile = new String();
+        retornoWhile += "while" + "(" + exp.toString() + ")" + "{" + "\n";
+        for(int i = 0; i < seqcomandos.size(); i++) {
+            retornoWhile += seqcomandos.get(i).toString();
+        }
+        return  retornoWhile + "}" + "\n";
+    }
+}
+
+class loopDoWhile extends Comando{
+    ArrayList<Comando> seqcomandos =  new ArrayList();
+    Exp exp;
+
+    loopDoWhile(ArrayList<Comando> seqcomandos, Exp exp)
+    {
+        this.seqcomandos = seqcomandos;
+        this.exp = exp;
+    }
+
+    public String toString(){
+        String retornoDoWhile = new String();
+        retornoDoWhile += "do" + "{" + "\n";
+        for(int i = 0; i < seqcomandos.size(); i++) {
+            retornoDoWhile += seqcomandos.get(i).toString();
+        }
+        return  retornoDoWhile + "}" + "while" + "(" + exp.toString() + ")" + ";" + "\n";
+    }
+}
+
+class retorno extends Comando{
+    Exp exp;
+
+    retorno(Exp exp)
+    {
+        this.exp = exp;
+    }
+
+    public String toString(){
+        return "return" + " " + exp.toString() + ";";
+    }
+}
+
+class SeqComandos{
+    ArrayList<Comando> comandos = new ArrayList();
+
+    SeqComandos(ArrayList<Comando> comandos){
+        this.comandos = comandos;
+    }
+
+    public String toString(){
+        String retornoComandos = new String();
+        for(int i=0; i<comandos.size(); i++){
+            retornoComandos += comandos.get(i).toString();
+            retornoComandos += "\n";
+        }
+
+        return retornoComandos;
+    }
+}
+
+
+class print extends Comando{
+    Exp exp;
+
+    print(Exp exp)
+    {
+        this.exp = exp;
+    }
+
+    public String toString(){
+        return "printf" + "(" + "\"%d\", " + exp.toString() + ")" + ";";
+    }
+}
+
+
+class Exp{}
+
+class operacao extends Exp{
+    Exp exp1;
+    Exp exp2;
+    Op operador;
+
+    operacao(Exp exp1, Exp exp2, Op operador)
+    {
+        this.exp1 = exp1;
+        this.exp2 = exp2;
+        this.operador = operador;
+    }
+
+    public String toString(){
+        return "(" + exp1.toString() + operador.toString() + exp2.toString() + ")";
+    }
+
+}
+
+//class Fator extends Exp{}
+
+class Var extends Exp{
+    String variavel = new String();
+
+    Var(String variavel){
+        this.variavel = variavel;
+    }
+
+    public String toString(){
+        return variavel;
+    }
+    
+}
+
+class retornoDeFuncao extends Exp{
+    Var id;
+    ArrayList<Exp> exp = new ArrayList();
+
+    retornoDeFuncao(Var id, ArrayList<Exp> exp)
+    {
+        this.id = id;
+        this.exp = exp;
+    }
+
+    public String toString(){
+      String retornoFuncoes = new String();
+      for(int i=0; i<exp.size(); i++){
+            retornoFuncoes += exp.get(i).toString();
+            if(i != exp.size() - 1) {
+                retornoFuncoes += ",";
+            }  
+        }
+      return id.toString() + "(" + retornoFuncoes + ")";
+    }
+}
+
+class Num extends Exp{
+    String numero;
+
+    Num(String numero){
+        this.numero = numero;
+    }
+
+    public String toString(){
+        return numero;
+    }
+}
+
+class Verdadeiro extends Exp{
+    String v = new String();
+
+    Verdadeiro(String v){
+        this.v = v;
+    }
+
+    public String toString(){
+        return "true";
+    }
+    
+}
+
+class Falso extends Exp{
+    String f = new String();
+
+    Falso(String f){
+        this.f = f;
+    }
+
+    public String toString(){
+        return "false";
+    }
+    
+}
+
+class Op{
+    String operador;
+
+    Op(String operador){
+        this.operador = operador;
+    }
+
+    public String toString(){
+        return operador;
+    }
+}
+
+class Func{
+    Tipo tipo;
+    Var id;
+    ArrayList<Arg> argumentos = new ArrayList();
+    ArrayList<DeclaraVar> declaraVariaveis = new ArrayList();
+    ArrayList<Comando> seqcomandos = new ArrayList();
+
+    Func(Tipo tipo, Var id, ArrayList<Arg> argumentos, ArrayList<DeclaraVar> declaraVariaveis, ArrayList<Comando> seqcomandos){
+        this.tipo = tipo;
+        this.id = id;
+        this.argumentos = argumentos;
+        this.declaraVariaveis = declaraVariaveis;
+        this.seqcomandos = seqcomandos;
+    }
+
+    public String toString(){
+        String retornoFuncao = new String();
+        for(int i=0; i<argumentos.size(); i++){
+            retornoFuncao += argumentos.get(i).toString();
+            if(i != argumentos.size() - 1) {
+                retornoFuncao += ", ";
+            }
+        }
+        retornoFuncao += ")";
+        retornoFuncao += "{";
+        retornoFuncao += "\n";
+        for(int i=0; i<declaraVariaveis.size(); i++){
+            retornoFuncao += declaraVariaveis.get(i).toString();
+        }
+        for(int i=0; i<seqcomandos.size(); i++){
+            retornoFuncao += seqcomandos.get(i).toString();
+        }
+        return tipo.toString() + " " + id.toString() + "(" + retornoFuncao + "}";
+    }
+}
+
+class Funcoes{
+    ArrayList<Func> funcao = new ArrayList();
+
+    Funcoes(ArrayList<Func> funcao){
+        this.funcao = funcao;
+    }
+
+    public String toString(){
+        String retornoFuncoes = new String();
+        for(int i=0; i<funcao.size(); i++){
+            retornoFuncoes += funcao.get(i).toString();
+            retornoFuncoes += "\n";
+        }
+
+        return retornoFuncoes;
+    }
+}
+
+class Arg{
+    Var id;
+    Tipo tipo;
+
+    Arg(Var id, Tipo tipo){
+        this.id = id;
+        this.tipo = tipo;
+    }
+
+    public String toString(){
+        return tipo.toString() + " " + id.toString() + "\n";
+    }
+}
+
+class ListaArg{
+    ArrayList<Arg> argumentos = new ArrayList();
+
+    ListaArg(ArrayList<Arg> argumentos) {
+        this.argumentos = argumentos;
+    }
+
+    public String toString() {
+        String retornoArgumentos = new String();
+        for(int i = 0; i < argumentos.size(); i++) {
+            retornoArgumentos += argumentos.get(i).toString();
+            if(i != argumentos.size() - 1) {
+                retornoArgumentos += ", ";
+            }
+        }
+        return retornoArgumentos;
+    }
+}
+
+
+
+public class Lugosi {
+    public static void main(String args[]) throws ParseException,IOException {
+        Lugosi parser = new Lugosi(new FileInputStream(args[0]));
+        LugosiA arvore = parser.Lugosi();
+        System.out.println(arvore);
+
+        OutputStream output = new FileOutputStream("main.c");
+        String s = arvore.toString();
+
+        int length = s.length()-1;
+        int count = 0;
+
+        while (count < length) {
+            output.write(s.charAt(count));
+            count++;
+        }
+                    
+        output.close();
+        
+    }
+}
+
+PARSER_END(Lugosi)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <APARENTESES: "(">
+| <FPARENTESES: ")">
+| <VAR: "var">
+| <INTEIRO: "int">
+| <BOOLEANO: "bool">
+| <FLUTUANTE: "float">
+| <VAZIO: "void">
+| <ATRIBUICAO: ":=">
+| <PEV: ";">
+| <CONDICAO: "if">
+| <LOOP: "while">
+| <FACA: "do">
+| <RETORNA: "return">
+| <IMPRIME: "print">
+| <VERDADEIRO: "true">
+| <FALSO: "false">
+| <SOMA: "+">
+| <SUB: "-">
+| <MULT: "*">
+| <DIV: "/">
+| <AND: "&&">
+| <OR: "||">
+| <MENOR: "<">
+| <MAIOR: ">">
+| <IGUAL: "==">
+| <VIRGULA: ",">
+| <FUNCAO: "function">
+}
+
+TOKEN :
+{
+  <NUM : (["0"-"9"])+ ("."(["0"-"9"])+)? ("E" ("+" | "-")? (["0"-"9"])+)?>
+ |< ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])* ( "_" (["a"-"z","A"-"Z","0"-"9"])+)*>
+
+}
+
+// LUGOSI -> 
+LugosiA Lugosi() :
+{Main m = null; ArrayList funcoes = new ArrayList();}
+{
+  (m = MAIN() (FUNCOES(funcoes))?)
+  {return new LugosiA(m, funcoes);}
+}
+
+
+//MAIN -> "main" "{" VARDECL SEQCOMANDOS "}"
+Main MAIN() :
+{ArrayList declaracoesVar = new ArrayList();
+ArrayList sequenciasComandos = new ArrayList();}
+{
+
+<MAIN> <ACHAVES> VARDECL(declaracoesVar) SEQCOMANDOS(sequenciasComandos) <FCHAVES>{return new Main(declaracoesVar, sequenciasComandos);}
+
+}
+
+
+//VARDECL -> ("var" TIPO TOKEN_id ";")*
+DeclaraVar UMAVAR():
+{Token id = null; Tipo tipo = null;}
+{
+  <VAR> tipo = TIPO() id = <ID> <PEV>{return new DeclaraVar(tipo, new Var(id.image));}
+}
+
+
+void VARDECL(ArrayList variaveis) :
+{DeclaraVar v = null;}
+{
+
+  (v = UMAVAR() {variaveis.add(v);})*
+
+}
+
+
+//TIPO -> "int" | "bool"
+Tipo TIPO() :
+{}
+{
+
+  <INTEIRO>{return new Tipo("int");} | <BOOLEANO>{return new Tipo("bool");}
+
+}
+
+
+//SEQCOMANDOS -> (COMANDO)*
+void SEQCOMANDOS(ArrayList comandos) :
+{Comando c = null;}
+{
+  (c = COMANDO() {comandos.add(c);})*
+}
+
+//COMANDO -> TOKEN_id TOKEN_id’
+//| TOKEN_id’ -> “:=” EXP “;” | “(“ LISTAEXP? “)” “;”
+//| "if" "(" EXP ")" "{" SEQCOMANDOS "}" ";"
+//| "while" "(" EXP ")" "do" "{" SEQCOMANDOS "}" ";"
+//| "do" "{" SEQCOMANDOS "}" "while" "(" EXP ")" ";"
+//| "return" EXP ";"
+//| "print" "(" EXP ")" ";"
+
+Comando COMANDO() :
+{Token id = null; Exp exp = null; ArrayList arrayC = new ArrayList(); Comando c = null;}
+{
+  id = <ID> c = IDLinha(id) {return c;}
+  | <CONDICAO> <APARENTESES> exp = EXP() <FPARENTESES> <ACHAVES> SEQCOMANDOS(arrayC) <FCHAVES> <PEV>{return new condicional(exp, arrayC);} 
+  | <LOOP> <APARENTESES> exp = EXP() <FPARENTESES> <FACA> <ACHAVES> SEQCOMANDOS(arrayC) <FCHAVES> <PEV>{return new loopWhile(exp, arrayC);}
+  | <FACA> <ACHAVES> SEQCOMANDOS(arrayC) <FCHAVES> <LOOP> <APARENTESES> exp = EXP() <FPARENTESES> <PEV>{return new loopDoWhile(arrayC, exp);}
+  | <RETORNA> exp = EXP() <PEV>{return new retorno(exp);}
+  | <IMPRIME> <APARENTESES> exp = EXP() <FPARENTESES> <PEV>{return new print(exp);}
+}
+
+Comando IDLinha(Token id) :
+{Exp exp = null; ArrayList listaexpressoes = new ArrayList();}
+{ 
+  <ATRIBUICAO> exp = EXP() <PEV>{return new Atrib(new Var(id.image), exp);}
+  | <APARENTESES> LISTAEXP(listaexpressoes) <FPARENTESES> <PEV>{return new chamadaDeFuncao(new Var(id.image), listaexpressoes);}
+}
+
+//EXP "(" EXP OP EXP ")" | FATOR
+Exp EXP() :
+{Exp expA=null; Exp expB=null; Op operador=null; Token fator=null; ArrayList exps = new ArrayList(); Exp result = null;}
+{
+    <APARENTESES> expA = EXP() operador = OP() expB = EXP() <FPARENTESES> {return new operacao(expA, expB, operador);}
+    |(fator=<ID> {result = new Var(fator.image);}(<APARENTESES> (LISTAEXP(exps))? <FPARENTESES> {result =  new retornoDeFuncao(new Var(fator.image),exps);})?){return result;}
+    |(fator=<NUM> {return new Num(fator.image);})
+    |(fator=<VERDADEIRO> {return new Verdadeiro(fator.image);})
+    |(fator=<FALSO> {return new Falso(fator.image);})
+
+}
+
+
+//OP -> operadores
+Op OP() :
+{Token op;}
+{
+  (op= <SOMA> | op = <SUB> | op = <MULT> 
+  | op= <DIV> | op = <AND> | op = <OR> | op = <MENOR> | op = <MAIOR> | op = <IGUAL>)
+  {return new Op(op.image);}
+}
+
+
+//LISTAEXP -> (EXP) ("," EXP)*
+void LISTAEXP(ArrayList exps) :
+{Exp exp = null;}
+{
+  exp = EXP(){exps.add(exp);} (<VIRGULA> exp = EXP(){exps.add(exp);})*
+}
+
+
+//FUNC -> ("function" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}")+
+Func FUNC() :
+{Tipo tipo = null; Token id=null; ArrayList argumentos = new ArrayList(); ArrayList variaveis = new ArrayList(); ArrayList comandos = new ArrayList();}
+{
+  <FUNCAO> tipo = TIPO() id = <ID> <APARENTESES> (LISTAARG(argumentos))? <FPARENTESES> 
+  <ACHAVES> VARDECL(variaveis) SEQCOMANDOS(comandos) <FCHAVES>
+  {return new Func(tipo, new Var(id.image), argumentos, variaveis, comandos);}
+}
+
+void FUNCOES(ArrayList funcoes) :
+{Func f = null;}
+{
+  (f = FUNC() {funcoes.add(f);})+
+}
+
+Arg ARGUMENTO():
+{Tipo tipo = null; Token id = null;}
+{
+  tipo = TIPO() id = <ID>{return new Arg(new Var(id.image), tipo);}
+}
+
+
+//LISTAARG -> (TIPO TOKEN_id) ("," TIPO TOKEN_id)*
+void LISTAARG(ArrayList argumentos) :
+{Arg a = null;}
+{
+  (a = ARGUMENTO() {argumentos.add(a);}) (<VIRGULA> a = ARGUMENTO() {argumentos.add(a);})*
+}
